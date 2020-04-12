@@ -3,6 +3,7 @@ const path = require('path');
 const isDev = require('electron-is-dev');
 const os = require('os')
 
+app.commandLine.appendArgument("--enable-features=Metal");
 
 let mainWindow;
 
@@ -12,7 +13,7 @@ function createWindow() {
   if (isDev) {
     // Open the DevTools.
     BrowserWindow.addDevToolsExtension(path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.6.0_0'));
-    mainWindow.webContents.openDevTools();
+    mainWindow.webContents.once('dom-ready', () => mainWindow.webContents.openDevTools());
   }
   mainWindow.on('closed', () => mainWindow = null);
 }
