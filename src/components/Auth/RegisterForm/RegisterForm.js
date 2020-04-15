@@ -19,7 +19,7 @@ const RegisterForm = ({ setSelectedForm }) => {
 	const [formError, setFormError] = useState({});
 	const [IsLoading, setIsLoading] = useState(false);;
 	
-	const handlerForm = () => {
+	const handleForm = () => {
 		setFormError({});
 		let errors = {};
 		let formOk = true;
@@ -39,38 +39,60 @@ const RegisterForm = ({ setSelectedForm }) => {
       formOk = false;
     }
 
-    setFormError(errors);
-    if(formOk){
+		setFormError(errors);
+		
+    if(formOk) {
       setIsLoading(true);
       firebase.auth()
       .createUserWithEmailAndPassword(formData.email, formData.password)
-      .then(() => {
-        toast.success("Registro Completado");
-      }).catch(() => {
+      .then((event) => {
+				toast.success("Registro Completado");
+				changeUserName();
+				sendVerificationEmail();
+      }).catch((c) => {
         toast.error("Error al crear la cuenta");
       }).finally(() => {
         setIsLoading(false);
         setSelectedForm(null);
       });
     }
-
 	};
 
-	const handlerShowPassword = () => {
+	const handleShowPassword = () => {
 		setShowPassword(!showPassword);
 	}
 
-	const onChange = (event) => {
+	const handleChange = (event) => {
 		setFormData({
 			...formData,
 			[event.target.name]: event.target.value
 		})
 	}
 
+	const changeUserName = () => {
+		firebase.auth().currentUser.updateProfile({
+			displayName: formData.Name
+		}).catch(() => {
+			toast.error("Error al asignar el nombre de usuario");
+		});
+	}
+
+	const sendVerificationEmail = () => {
+		firebase.auth()
+		.currentUser
+		.sendEmailVerification()
+		.then(() => {
+			toast.success("Se ha enviado un correo electronico de verificación")
+		})
+		.catch(() => {
+			toast.error("Error al enviar el correo de electronico de verificación");
+		})
+	}
+	
   return (
     <div className="register-form">
       <h1>Empiez a escuchar con una cuenta de Musicfy gratis.</h1>
-      <Form onSubmit={handlerForm} onChange={onChange}>
+      <Form onSubmit={handleForm} onChange={handleChange}>
         <Form.Field>
           <Input
             type="text"
@@ -90,9 +112,9 @@ const RegisterForm = ({ setSelectedForm }) => {
             type={showPassword ? "text": "password"}
             name="password"
             placeholder="Contraseña"
-						icon={showPassword ? 
-							(<Icon name="eye slash outline" link onClick={handlerShowPassword} />) : 
-							(<Icon name="eye" link onClick={handlerShowPassword} />)
+            icon={showPassword ? 
+							(<Icon name="eye slash outline" link onClick={handleShowPassword} />) : 
+							(<Icon name="eye" link onClick={handleShowPassword} />)
 						}
             error = {formError.password}
           />
